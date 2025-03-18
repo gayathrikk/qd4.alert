@@ -1,4 +1,5 @@
 package dd.project;
+
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -15,14 +16,15 @@ import org.testng.annotations.Test;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
-public class test1 {
+
+public class PP2Storage {
 	 @Test
      public void testStorageDetails() {
          JSch jsch = new JSch();
          com.jcraft.jsch.Session session = null;
          try {
              String user = "hbp";
-             String host = "pp2.humanbrain.in";
+             String host = "pp3.humanbrain.in";
              String password = "Health#123";
              int port = 22;
              session = jsch.getSession(user, host, port);
@@ -57,21 +59,21 @@ public class test1 {
 
              String[] lines = output.toString().split("\n");
              System.out.println("+------------------------------------+------+-------+-------+--------+-------------------------+");
-             System.out.println("|       Filesystem                   | Size | Used  | Avail |  Use%  | Mounted on               |");
+             System.out.println("|       Filesystem                   | Size | Used  | Avail |  Use%  | Mounted on              |");
              System.out.println("+------------------------------------+------+-------+-------+--------+-------------------------+");
 
              StringBuilder emailContent = new StringBuilder();
              boolean sendEmail = false;
              for (int i = 1; i < lines.length; i++) {
                  String[] parts = lines[i].trim().split("\\s+");
-                 System.out.printf("| %-34s | %4s | %5s | %5s | %6s | %-20s |\n", parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]);
+                 System.out.printf("| %-34s | %4s | %5s | %5s | %6s | %-23s |\n", parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]);
                  System.out.println("+------------------------------------+------+-------+-------+--------+-------------------------+");
 
                  int usePercent = Integer.parseInt(parts[4].replace("%", ""));
-                 if (usePercent > 10) {
+                 if (usePercent > 1) {
                      sendEmail = true;
                      if (parts[0].equals("df -h /mnt/local/nvmestorage")) {
-                         emailContent.append("pp2v15.humanbrain.in  - D2_nvmeShare used storage is exceeding 70%\n");
+                         emailContent.append("PP3.humanbrain.in  -  used storage is exceeding 70%\n");
                      }
                  }
              }
@@ -89,8 +91,8 @@ public class test1 {
 	 private void sendEmailAlert(String messageBody) {
 	        // Recipient's email ID needs to be mentioned.
 	  
-	    	String[] to = {"annotation.divya@gmail.com"};
-	        String[] cc = { "divya.d@htic.iitm.ac.in"};
+	    	String[] to = {"divya.d@htic.iitm.ac.in"};
+	        String[] cc = {"nathan.i@htic.iitm.ac.in, venip@htic.iitm.ac.in"};
 	        String[] bcc = {};  	
 	    
 	        // Sender's email ID needs to be mentioned
@@ -128,11 +130,11 @@ public class test1 {
 	                message.addRecipient(Message.RecipientType.BCC, new InternetAddress(bccRecipient));
 	            }
 	            // Set Subject: header field
-	            message.setSubject("PP2.humanbrain.in - STORAGE ALERT ⚠️ ");
+	            message.setSubject("PP3.humanbrain.in - STORAGE ALERT ⚠️ ");
 	            // Set the actual message
 	            message.setContent("This email has been automatically generated:<br>" + messageBody + 
 	            	    "Attention and Action Required <br>" + messageBody +
-	            	    "<br>PP2 <b>scanner_2 nvmeShare</b> storage utilization has crossed <b style='color:red;'>70%</b> :<br>" + messageBody + 
+	            	    "<br>PP3 <b>nvmeShare</b> storage utilization has crossed <b style='color:red;'>70%</b> :<br>" + messageBody + 
 	            	    "<br>Please clear unnecessary files to free up space and avoid storage-related issues.<br>" + messageBody, "text/html");
 
 	            System.out.println("sending...");
@@ -143,3 +145,4 @@ public class test1 {
 	            mex.printStackTrace();
 	        }
      }}
+
