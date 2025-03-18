@@ -58,7 +58,7 @@ public class pp1storage {
             }
 
             String[] lines = output.toString().split("\n");
-            System.out.println("PPl STORAGE REPORT:");
+            System.out.println("---------------------------------------PPl STORAGE REPORT:--------------------------------------");
             System.out.println("+------------------------------------+------+-------+-------+--------+-------------------------+");
             System.out.println("|       Filesystem                   | Size | Used  | Avail |  Use%  | Mounted on              |");
             System.out.println("+------------------------------------+------+-------+-------+--------+-------------------------+");

@@ -2,12 +2,12 @@
 <testng-results ignored="0" total="1" passed="1" failed="0" skipped="0">
   <reporter-output>
   </reporter-output>
-  <suite started-at="2025-03-18T15:44:12 IST" name="Default suite" finished-at="2025-03-18T15:44:18 IST" duration-ms="5656">
+  <suite started-at="2025-03-18T16:15:24 IST" name="Default suite" finished-at="2025-03-18T16:15:31 IST" duration-ms="6498">
     <groups>
     </groups>
-    <test started-at="2025-03-18T15:44:12 IST" name="Default test" finished-at="2025-03-18T15:44:18 IST" duration-ms="5656">
+    <test started-at="2025-03-18T16:15:24 IST" name="Default test" finished-at="2025-03-18T16:15:31 IST" duration-ms="6498">
       <class name="dd.project.pp3storage">
-        <test-method signature="testStorageDetails()[pri:0, instance:dd.project.pp3storage@6da21078]" started-at="2025-03-18T15:44:13 IST" name="testStorageDetails" finished-at="2025-03-18T15:44:18 IST" duration-ms="5622" status="PASS">
+        <test-method signature="testStorageDetails()[pri:0, instance:dd.project.pp3storage@6da21078]" started-at="2025-03-18T16:15:24 IST" name="testStorageDetails" finished-at="2025-03-18T16:15:31 IST" duration-ms="6471" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- testStorageDetails -->
