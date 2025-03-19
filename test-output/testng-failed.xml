@@ -3,11 +3,11 @@
 <suite name="Failed suite [Default suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="Default test(failed)">
     <classes>
-      <class name="dd.project.test1">
+      <class name="dd.project.Scanning_StoragesReport">
         <methods>
           <include name="testStorageDetails"/>
         </methods>
-      </class> <!-- dd.project.test1 -->
+      </class> <!-- dd.project.Scanning_StoragesReport -->
     </classes>
   </test> <!-- Default test(failed) -->
 </suite> <!-- Failed suite [Default suite] -->

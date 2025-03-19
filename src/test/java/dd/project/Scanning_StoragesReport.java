@@ -1,168 +1,160 @@
 package dd.project;
-import com.jcraft.jsch.*;
-import javax.mail.*;
-import javax.mail.internet.*;
 
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.Properties;
+
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
+import org.testng.annotations.Test;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+
 public class Scanning_StoragesReport {
-	private static final Map<String, String> MACHINES = new HashMap<>();
+    @Test
+    public void testStorageDetails() {
+        JSch jsch = new JSch();
+        com.jcraft.jsch.Session session = null;
+        try {
+            String user = "appUser";
+            String host = "pp4.humanbrain.in";
+            String password = "Brain@123";  // ⚠ Consider using environment variables instead.
+            int port = 22;
+            session = jsch.getSession(user, host, port);
+            session.setPassword(password);
+            session.setConfig("StrictHostKeyChecking", "no");
+            session.connect();
 
-	static {
-	        MACHINES.put("pp1.humanbrain.in", "/store/nvmestorage/postImageProcessor");
-	        MACHINES.put("pp2.humanbrain.in", "/mnt/local/nvmestorage/postImageProcessor");
-	        MACHINES.put("pp3.humanbrain.in", "/mnt/local/nvmestorage/postImageProcessor");
-	        MACHINES.put("pp4.humanbrain.in", "/mnt/local/nvmestorage/postImageProcessor");
-	        MACHINES.put("pp5.humanbrain.in", "/mnt/local/nvmestorage/postImageProcessor");
-	        MACHINES.put("pp7.humanbrain.in", "/mnt/local/nvmestorage/postImageProcessor");
-	        MACHINES.put("qd4.humanbrain.in", "/mnt/local/nvme2/postImageProcessor");
-	    }
+            Channel channel = session.openChannel("exec");
+            ((ChannelExec) channel).setCommand("ls -lh --time-style=long-iso /mnt/local/nvmestorage/postImageProcessor");
+            channel.setInputStream(null);
+            ((ChannelExec) channel).setErrStream(System.err);
+            InputStream in = channel.getInputStream();
+            channel.connect();
 
-	    public static void main(String[] args) {
-	        StringBuilder emailContent = new StringBuilder();
-	        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-	        String todayDate = sdf.format(new Date());
+            byte[] tmp = new byte[1024];
+            StringBuilder output = new StringBuilder();
+            while (true) {
+                while (in.available() > 0) {
+                    int i = in.read(tmp, 0, 1024);
+                    if (i < 0) break;
+                    output.append(new String(tmp, 0, i));
+                }
+                if (channel.isClosed()) {
+                    if (in.available() > 0) continue;
+                    break;
+                }
+                Thread.sleep(1000);
+            }
 
-	        for (Map.Entry<String, String> entry : MACHINES.entrySet()) {
-	            String machine = entry.getKey();
-	            String directory = entry.getValue();
+            channel.disconnect();
+            session.disconnect();
 
-	            List<String> todayFiles = new ArrayList<>();
-	            List<String> pendingFiles = new ArrayList<>();
+            String[] lines = output.toString().split("\n");
+            System.out.println("Files in  /mnt/local/nvmestorage/postImageProcessor:\n");
 
-	            // Connect to each machine and retrieve the files with their dates
-	            checkFiles(machine, directory, todayDate, todayFiles, pendingFiles);
+            int todayFileCount = 0;
+            int oldFileCount = 0;
+            StringBuilder todayFiles = new StringBuilder();
+            StringBuilder oldFiles = new StringBuilder();
+        
+            // Define date format and today's date outside the loop
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String todayDate = sdf.format(new Date());
 
-	            emailContent.append("================================== ").append(machine).append(" ==================================\n");
+            for (String line : lines) {
+                System.out.println("DEBUG: " + line);  // Print each line for debugging
 
-	            // Today's files
-	            if (!todayFiles.isEmpty()) {
-	                emailContent.append("📂 **Today's Files:**\n");
-	                emailContent.append("-----------------------------------------------------------------------------------------------------------\n");
-	                for (String file : todayFiles) {
-	                    emailContent.append(file).append("\n");
-	                }
-	            } else {
-	                emailContent.append("📅 No new files found for today.\n");
-	            }
+                if (!line.startsWith("total") && !line.startsWith("drwx")) {
+                    String[] parts = line.trim().split("\\s+", 8); // Splitting properly
 
-	            // Pending files
-	            if (!pendingFiles.isEmpty()) {
-	                emailContent.append("\n⚠ **Pending Files from Previous Days:**\n");
-	                emailContent.append("------------------------------------------------------------------------------------------------------------------------------\n");
-	                for (String file : pendingFiles) {
-	                    emailContent.append(file).append("\n");
-	                }
-	            } else {
-	                emailContent.append("\n🎉 **No pending files remaining!**\n");
-	            }
+                    if (parts.length >= 8) {
+                        String fileDate = parts[5];   // Picking date in YYYY-MM-DD format
+                        String fileName = parts[7];   // This should be the filename
 
-	            emailContent.append("\n================================== ***DONE*** ==================================\n\n");
-	        }
+                        System.out.println("Parsed Date: " + fileDate + ", File: " + fileName); // Debugging output
 
-	        // Sending email alert
-	        sendEmailAlert(emailContent.toString());
-	    }
+                        if (fileDate.equals(todayDate)) {
+                            todayFileCount++;
+                            todayFiles.append("<span style='color:red;'>" + fileDate + " - " + fileName + "</span><br>");
+                        } else {
+                            oldFileCount++;
+                            oldFiles.append(fileDate + " - " + fileName + "<br>");
+                        }
+                    }
+                }
+            }
 
-	    private static void checkFiles(String machine, String directory, String todayDate, List<String> todayFiles, List<String> pendingFiles) {
-	        JSch jsch = new JSch();
-	        com.jcraft.jsch.Session session = null;
-	        
-	        try {
-	            String user = "hbp";
-	            String host = machine;
-	            String password = "Health#123";  // Use your correct password
-	            int port = 22;
-	            session = jsch.getSession(user, host, port);
-	            session.setPassword(password);
-	            session.setConfig("StrictHostKeyChecking", "no");
-	            session.connect();
+            // **Send email only if old files exist**
+            if (oldFileCount > 0) {  
+                sendEmailAlert(todayFiles.toString(), oldFiles.toString(), todayFileCount, oldFileCount, host);
+            } else {
+                System.out.println("No old files found. Email not sent.");
+            }
 
-	            Channel channel = session.openChannel("exec");
-	            ((ChannelExec) channel).setCommand("find " + directory + " -type f -exec ls -lh {} \\;");  // List files with details
-	            channel.setInputStream(null);
-	            ((ChannelExec) channel).setErrStream(System.err);
-	            InputStream in = channel.getInputStream();
-	            channel.connect();
-	            byte[] tmp = new byte[1024];
-	            StringBuilder output = new StringBuilder();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }  
 
-	            while (true) {
-	                while (in.available() > 0) {
-	                    int i = in.read(tmp, 0, 1024);
-	                    if (i < 0) break;
-	                    output.append(new String(tmp, 0, i));
-	                }
-	                if (channel.isClosed()) {
-	                    if (in.available() > 0) continue;
-	                    break;
-	                }
-	                try {
-	                    Thread.sleep(1000);
-	                } catch (Exception ee) {
-	                    ee.printStackTrace();
-	                }
-	            }
+    private void sendEmailAlert(String todayFiles, String oldFiles, int todayFileCount, int oldFileCount, String machineName) {
+        String[] to = {"annotation.divya@gmail.com"};
+        String[] cc = {"venip@htic.iitm.ac.in"};
+        String[] bcc = {"divya.d@htic.iitm.ac.in"};
 
-	            String[] lines = output.toString().split("\n");
+        String from = "gayathri@htic.iitm.ac.in";
+        String host = "smtp.gmail.com";
 
-	            for (String line : lines) {
-	                String[] parts = line.split("\\s+");
-	                if (parts.length > 5) {
-	                    String fileName = parts[8];
-	                    String fileDate = parts[5] + " " + parts[6] + " " + parts[7];  // Getting the date from the file details
-	                    
-	                    if (isTodayFile(fileDate, todayDate)) {
-	                        todayFiles.add(fileName + " (Date: " + fileDate + ")");
-	                    } else {
-	                        pendingFiles.add(fileName + " (Date: " + fileDate + ")");
-	                    }
-	                }
-	            }
+        Properties properties = System.getProperties();
+        properties.put("mail.smtp.host", host);
+        properties.put("mail.smtp.port", "465");
+        properties.put("mail.smtp.ssl.enable", "true");
+        properties.put("mail.smtp.auth", "true");
 
-	            channel.disconnect();
-	            session.disconnect();
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	            System.out.println("Error while checking files on machine " + machine + ": " + e.getMessage());
-	        }
-	    }
+        Session session = Session.getInstance(properties, new javax.mail.Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication("gayathri@htic.iitm.ac.in", "Gayu@0918"); // Fix: Use app password
+            }
+        });
 
-	    // Helper method to check if the file date matches today's date
-	    private static boolean isTodayFile(String fileDate, String todayDate) {
-	        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd yyyy");
-	        return sdf.format(new Date()).equals(fileDate);
-	    }
+        session.setDebug(true);
+        try {
+            MimeMessage message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(from));
 
-	    private static void sendEmailAlert(String messageBody) {
-	        String to = "divya.d@htic.iitm.ac.in";  // Change this to your recipient email
-	        String from = "gayathri@htic.iitm.ac.in";  // Your email
-	        String host = "smtp.gmail.com";  // Use the correct SMTP server (Gmail in this case)
-	        Properties properties = System.getProperties();
-	        properties.put("mail.smtp.host", host);
-	        properties.put("mail.smtp.port", "465");
-	        properties.put("mail.smtp.ssl.enable", "true");
-	        properties.put("mail.smtp.auth", "true");
+            for (String recipient : to) {
+                message.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
+            }
+            for (String ccRecipient : cc) {
+                message.addRecipient(Message.RecipientType.CC, new InternetAddress(ccRecipient));
+            }
+            for (String bccRecipient : bcc) {
+                message.addRecipient(Message.RecipientType.BCC, new InternetAddress(bccRecipient));
+            }
 
-	        javax.mail.Session session = javax.mail.Session.getInstance(properties, new javax.mail.Authenticator() {
-	            protected PasswordAuthentication getPasswordAuthentication() {
-	                return new PasswordAuthentication("gayathri@htic.iitm.ac.in", "Gayu@0918"); // Your credentials
-	            }
-	        });
+            message.setSubject("ALERT: Old Files Found in " + machineName + " 📂");
+            String content = "<p>This is an automated alert:</p>" +
+                    "<p>The directory <b> /mnt/local/nvmestorage/postImageProcessor</b> on machine <b style='color:blue;'>" + machineName + "</b> contains old files.</p>" +
+                    "<p><b>" + oldFileCount + "</b> old files exist:</p>" +
+                    "<pre>" + oldFiles + "</pre>" +
+                    "<p>Please review and take necessary action.</p>" +
+                    "<p>Best Regards,<br>Automated Monitoring System</p>";
 
-	        try {
-	            MimeMessage message = new MimeMessage(session);
-	            message.setFrom(new InternetAddress(from));
-	            message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
-	            message.setSubject("Scanning Machines Storage Report");
-	            message.setText("File Report for " + new SimpleDateFormat("yyyy-MM-dd").format(new Date()) + ":\n\n" + messageBody);
-	            System.out.println("Sending...");
-	            Transport.send(message);
-	            System.out.println("Email sent successfully!");
-	        } catch (MessagingException mex) {
-	            mex.printStackTrace();
-	        }
-	    }
-	}
+            message.setContent(content, "text/html");
+            System.out.println("Sending alert email...");
+            Transport.send(message);
+            System.out.println("Email sent successfully!");
 
+        } catch (MessagingException mex) {
+            mex.printStackTrace();
+        }
+    }
+}
