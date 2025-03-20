@@ -2,16 +2,16 @@
 <testng-results ignored="0" total="1" passed="1" failed="0" skipped="0">
   <reporter-output>
   </reporter-output>
-  <suite started-at="2025-03-20T12:58:18 IST" name="Default suite" finished-at="2025-03-20T12:58:20 IST" duration-ms="2284">
+  <suite started-at="2025-03-20T13:05:39 IST" name="Default suite" finished-at="2025-03-20T13:05:41 IST" duration-ms="2033">
     <groups>
     </groups>
-    <test started-at="2025-03-20T12:58:18 IST" name="Default test" finished-at="2025-03-20T12:58:20 IST" duration-ms="2284">
-      <class name="dd.project.pp2_humanbrain">
-        <test-method signature="testStorageDetails()[pri:0, instance:dd.project.pp2_humanbrain@4229bb3f]" started-at="2025-03-20T12:58:18 IST" name="testStorageDetails" finished-at="2025-03-20T12:58:20 IST" duration-ms="2256" status="PASS">
+    <test started-at="2025-03-20T13:05:39 IST" name="Default test" finished-at="2025-03-20T13:05:41 IST" duration-ms="2033">
+      <class name="dd.project.pp3storage">
+        <test-method signature="testStorageDetails()[pri:0, instance:dd.project.pp3storage@4229bb3f]" started-at="2025-03-20T13:05:39 IST" name="testStorageDetails" finished-at="2025-03-20T13:05:41 IST" duration-ms="2010" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- testStorageDetails -->
-      </class> <!-- dd.project.pp2_humanbrain -->
+      </class> <!-- dd.project.pp3storage -->
     </test> <!-- Default test -->
   </suite> <!-- Default suite -->
 </testng-results>
