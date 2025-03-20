@@ -2,16 +2,16 @@
 <testng-results ignored="0" total="1" passed="1" failed="0" skipped="0">
   <reporter-output>
   </reporter-output>
-  <suite started-at="2025-03-20T15:25:04 IST" name="Default suite" finished-at="2025-03-20T15:25:06 IST" duration-ms="2037">
+  <suite started-at="2025-03-20T15:34:45 IST" name="Default suite" finished-at="2025-03-20T15:34:53 IST" duration-ms="8193">
     <groups>
     </groups>
-    <test started-at="2025-03-20T15:25:04 IST" name="Default test" finished-at="2025-03-20T15:25:06 IST" duration-ms="2037">
-      <class name="dd.project.pp7alert">
-        <test-method signature="testStorageDetails()[pri:0, instance:dd.project.pp7alert@4229bb3f]" started-at="2025-03-20T15:25:04 IST" name="testStorageDetails" finished-at="2025-03-20T15:25:06 IST" duration-ms="2011" status="PASS">
+    <test started-at="2025-03-20T15:34:45 IST" name="Default test" finished-at="2025-03-20T15:34:53 IST" duration-ms="8193">
+      <class name="dd.project.qd4alert">
+        <test-method signature="testStorageDetails()[pri:0, instance:dd.project.qd4alert@4229bb3f]" started-at="2025-03-20T15:34:45 IST" name="testStorageDetails" finished-at="2025-03-20T15:34:53 IST" duration-ms="8166" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- testStorageDetails -->
-      </class> <!-- dd.project.pp7alert -->
+      </class> <!-- dd.project.qd4alert -->
     </test> <!-- Default test -->
   </suite> <!-- Default suite -->
 </testng-results>
