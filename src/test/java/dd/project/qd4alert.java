@@ -108,7 +108,8 @@ public class qd4alert {
 
     private void sendEmailAlert(String todayFiles, String oldFiles, int todayFileCount, int oldFileCount, String machineName) {
        String[] to = {"nathan.i@htic.iitm.ac.in"};
-       String[] bcc = {"divya.d@htic.iitm.ac.in", "nitheshkumarsundhar@gmail.com"};
+      String[] cc = {"venip@htic.iitm.ac.in", "nitheshkumarsundhar@gmail.com"};
+
 
         String[] bcc = {"divya.d@htic.iitm.ac.in"};
 
